@@ -39,13 +39,121 @@ console.log(sudokuOfYourDream);
  * Возвращает игровое поле после попытки его решить.
  * Договорись со своей командой, в каком формате возвращать этот результат.
  */
-function solve(boardString) {}
+
+
+
+
+function solve(boardString) {
+  const newArr = [];
+  for (let i = 0; i < boardString.length; i += 9) {
+    newArr.push([...boardString.slice(i, i + 9)]);
+  }
+
+  const arrNext = newArr.slice(0, 9);
+  const arrNumberLast = arrNext.map((el) =>
+    el.map((it) => (!isNaN(it) ? Number(it) : "-"))
+  );
+
+  const arrNumber = JSON.parse(JSON.stringify(arrNumberLast));
+
+  function searchNumber(arrNumber) {
+    let count = 0;
+    for (let i = 0; i < arrNumber.length; i++) {
+      for (let j = 0; j < arrNumber[i].length; j++) {
+        let num = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+        function filterCol(num) {
+          let column = [];
+          for (let a = 0; a < arrNumber[i].length; a++) {
+            column.push(arrNumber[a][j]);
+          }
+
+          let colFilter = column.filter((el) => typeof el === "number");
+
+          for (let y = 0; y < colFilter.length; y++) {
+            if (num.indexOf(colFilter[y]) >= 0) {
+              num.splice(num.indexOf(colFilter[y]), 1);
+            }
+          }
+          return num;
+        }
+        let numFilterCol = filterCol(num);
+        function filterRow(numFilterCol) {
+          let row = [];
+          for (let a = 0; a < arrNumber[i].length; a++) {
+            row.push(arrNumber[i][a]);
+          }
+
+          let rowFilter = row.filter((el) => typeof el === "number");
+
+          for (let y = 0; y < rowFilter.length; y++) {
+            if (numFilterCol.indexOf(rowFilter[y]) >= 0) {
+              numFilterCol.splice(numFilterCol.indexOf(rowFilter[y]), 1);
+            }
+          }
+
+          return numFilterCol;
+        }
+        let numFilterRow = filterRow(numFilterCol);
+
+        function filterSquare(numFilterRow) {
+          let square = new Map();
+          for (let a = 0; a < 3; a++) {
+            for (let b = 0; b < 9; b += 3) {
+              let arrSquare = [];
+              for (let d = 0; d < 3; d++) {
+                arrSquare.push(arrNumber[a * 3 + d].slice(b, b + 3));
+              }
+              square.set(`${a}${b}`, arrSquare.flat());
+            }
+          }
+          const arrSquareFind = square
+            .get(`${Math.floor(i / 3)}${j - (j % 3)}`)
+            .filter((el) => typeof el === "number");
+
+          for (let y = 0; y < arrSquareFind.length; y++) {
+            if (numFilterRow.indexOf(arrSquareFind[y]) >= 0) {
+              numFilterRow.splice(numFilterRow.indexOf(arrSquareFind[y]), 1);
+            }
+          }
+
+          return numFilterRow;
+        }
+        const numFind = filterSquare(numFilterRow);
+        if (numFind.length === 1 && typeof arrNumber[i][j] !== "number") {
+          arrNumber[i].splice(j, 1, Number(numFind.join("")));
+          count += 1;
+        }
+      }
+    }
+    if (arrNumber.flat().every((it) => typeof it === "number")) {
+      return arrNumber;
+    }
+    if (count === 0) {
+      return arrNumber;
+    } else {
+      return searchNumber(arrNumber);
+    }
+  }
+
+  return searchNumber(arrNumber);
+}
+
 
 /**
  * Принимает игровое поле в том формате, в котором его вернули из функции solve.
  * Возвращает булевое значение — решено это игровое поле или нет.
  */
-function isSolved(board) {}
+
+
+
+function isSolved(board) {
+  if (board.flat().every((it) => typeof it === "number")) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 
 /**
  * Принимает игровое поле в том формате, в котором его вернули из функции solve.
@@ -53,12 +161,10 @@ function isSolved(board) {}
  * Подумай, как симпатичнее сформировать эту строку.
  */
 
-// function prettyBoard(board) {
-//   let result = [];
-//   for (let i = 0; i < board.length; i += 1) {
+function prettyBoard(board) {
+  return console.table(board);
+}
 
-// }
-// console.log(prettyBoard(str));
 
 // Экспортировать функции для использования в другом файле (например, readAndSolve.js).
 module.exports = {
